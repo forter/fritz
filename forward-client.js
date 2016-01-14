@@ -2,13 +2,8 @@
 
 const {Queue} = require('./queue'),
       net = require('net'),
-      path = require('path'),
-      proto = require('protobufjs'),
       buffer = require('buffer'),
-      {Reader} = require('./transport'),
-      builder = proto.loadProtoFile(path.join(__dirname, 'proto.proto')),
-      Msg = builder.build('Msg'),
-      {getMessageWithLengthBuffer} = require('./proto');
+      {Msg, Reader, getMessageWithLengthBuffer} = require('./proto');
 
 class ForwardClient {
     constructor(host, port, lowWaterMark, highWaterMark, maxFlushInterval, logger) {
@@ -51,6 +46,7 @@ class ForwardClient {
     }
 
     enqueue(events) {
+        // TODO: report event loss
         for (const ev of events)
             this.eventQueue.pushright(ev);
         if (this.eventQueue.length >= this.lowWaterMark)

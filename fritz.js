@@ -1,18 +1,12 @@
 'use strict';
 
 const net = require('net'),
-      path = require('path'),
-      proto = require('protobufjs'),
       winston = require('winston'),
-      client = require('riemann'),
-      {Reader} = require('./transport'),
       {ForwardClient} = require('./forward-client'),
-      {getMessageWithLengthBuffer} = require('./proto');
+      {Msg, Reader, getMessageWithLengthBuffer} = require('./proto');
 
 const port = 6666,
       address = '127.0.0.1',
-      builder = proto.loadProtoFile(path.join(__dirname, 'proto.proto')),
-      Msg = builder.build('Msg'),
       OK = getMessageWithLengthBuffer(new Msg(true)),
       logger = new (winston.Logger)({
           level: 'debug',
