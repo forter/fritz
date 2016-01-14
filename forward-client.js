@@ -6,12 +6,12 @@ const {Queue} = require('./queue'),
       {Msg, Reader, getMessageWithLengthBuffer} = require('./proto');
 
 class ForwardClient {
-    constructor(host, port, lowWaterMark, highWaterMark, maxFlushInterval, logger) {
+    constructor(logger, host, port = 5000, lowWaterMark = 1000, highWaterMark = 2000, maxFlushInterval = 1000, reconnectTimeout = 1000) {
         this.logger = logger;
         this.host = host;
         this.port = port;
         this.client = null;
-        this.reconnectTimeout = 1000;
+        this.reconnectTimeout = reconnectTimeout;
         this.eventQueue = new Queue(highWaterMark);
         this.lowWaterMark = lowWaterMark;
         this.maxFlushInterval = maxFlushInterval;

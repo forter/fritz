@@ -15,7 +15,7 @@ const port = 6666,
           ]
       });
 
-const forwarder = new ForwardClient('localhost', 5555, 3, 4, 5000, logger);
+const forwarder = new ForwardClient(logger, 'localhost', 5555, 3, 4, 5000);
 
 const server = net.createServer((socket) => {
     const clientRepr = socket.remoteAddress + ':' + socket.remotePort;
