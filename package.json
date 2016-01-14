@@ -1,0 +1,28 @@
+{
+  "name": "fritz",
+  "description": "Riemann forward proxy",
+  "version": "0.0.1",
+  "private": false,
+  "dependencies": {
+    "protobufjs": "^5.0.1",
+    "winston": "^2.1.1"
+  },
+  "readmeFilename": "README.md",
+  "main": "fritz.js",
+  "devDependencies": {},
+  "scripts": {
+    "start": "node --harmony_destructuring --harmony_default_parameters fritz.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/forter/fritz"
+  },
+  "author": "Forter",
+  "licenses": [
+    {
+      "type": "APACHE 2",
+      "url": "https://raw.githubusercontent.com/forter/fritz/master/LICENSE"
+    }
+  ]
+}
