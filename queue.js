@@ -14,12 +14,8 @@ class Queue {
         const node = new Node(value);
         if (this.head === null)
             this.tail = this.head = node;
-        else if (this.head === this.tail)
-            this.head.next = this.tail = node;
-        else {
-            this.tail.next = node;
-            this.tail = node;
-        }
+        else
+            this.tail = this.tail.next = node;
         this.length += 1;
     }
 

@@ -30,8 +30,7 @@ class ForwardClient {
             this.client = client;
         }).on('end', () => {
             this.logger.warn('Riemann client disconnected, attempting reconnect in ', this.reconnectTimeout, 'ms');
-            this.client = null;
-            setTimeout(() => { this.connect(); }, this.reconnectTimeout);
+            this.triggerReconnect();
         }).on('data', (data) => {
             const messages = this.reader.readMessagesFromBuffer(data);
             for (const ack of messages) {
@@ -41,8 +40,13 @@ class ForwardClient {
             }
         }).on('error', (error) => {
             this.logger.error('Riemann client error:', error, ' attempting reconnect in ', this.reconnectTimeout, 'ms');
-            setTimeout(() => { this.connect(); }, this.reconnectTimeout);
+            this.triggerReconnect();
         });
+    }
+
+    triggerReconnect() {
+        this.client = null;
+        setTimeout(() => { this.connect(); }, this.reconnectTimeout);
     }
 
     enqueue(events) {
@@ -62,17 +66,21 @@ class ForwardClient {
     }
     flush() {
         // TODO: check number of inflight requests
-        if (this.client !== null) {
-            const message = new Msg();
-            // if no events are set, acts as a keepalive packet
-            message.events = this.eventQueue.toArray();
-            this.logger.info('flushing', message.events.length, 'events');
-            const data = getMessageWithLengthBuffer(message)
-            this.logger.debug('>>', data);
-            this.client.write(data);
-            this.eventQueue = new Queue(this.eventQueue.maxLength);
+        try {
+            if (this.client !== null) {
+                const message = new Msg();
+                // if no events are set, acts as a keepalive packet
+                message.events = this.eventQueue.toArray();
+                this.logger.info('flushing', message.events.length, 'events');
+                const data = getMessageWithLengthBuffer(message)
+                this.logger.debug('>>', data);
+                this.client.write(data);
+                this.eventQueue = new Queue(this.eventQueue.maxLength);
+            }
         }
-        this.resetFlushTimer();
+        finally {
+            this.resetFlushTimer();
+        }
     }
 }
 
