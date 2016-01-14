@@ -19,9 +19,9 @@ class ForwardClient {
         this.reconnectTimeout = 1000;
         this.eventQueue = new Queue(highWaterMark);
         this.lowWaterMark = lowWaterMark;
-        // TODO: flush periodically
         this.maxFlushInterval = maxFlushInterval;
-        this.lastFlushTime = null;
+        this.flushTimer = null;
+        this.resetFlushTimer();
         this.reader = new Reader();
         this.connect();
     }
@@ -57,10 +57,18 @@ class ForwardClient {
             this.flush();
     }
 
+    resetFlushTimer() {
+        if (this.flushTimer !== null);
+        clearTimeout(this.flushTimer);
+        this.flushTimer = setTimeout(() => {
+            this.flush();
+        }, this.maxFlushInterval);
+    }
     flush() {
         // TODO: check number of inflight requests
         if (this.client !== null) {
             const message = new Msg();
+            // if no events are set, acts as a keepalive packet
             message.events = this.eventQueue.toArray();
             this.logger.info('flushing', message.events.length, 'events');
             const data = getMessageWithLengthBuffer(message)
@@ -68,6 +76,7 @@ class ForwardClient {
             this.client.write(data);
             this.eventQueue = new Queue(this.eventQueue.maxLength);
         }
+        this.resetFlushTimer();
     }
 }
 
