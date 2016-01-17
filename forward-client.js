@@ -6,14 +6,14 @@ const {Queue} = require('./queue'),
       {Msg, Reader, getMessageWithLengthBuffer} = require('./proto');
 
 class ForwardClient {
-    constructor(logger, host, port = 5000, lowWaterMark = 1000, highWaterMark = 2000, maxFlushInterval = 1000, reconnectTimeout = 1000) {
+    constructor(logger, host, port = 5555, minFlushEvents = 1000, maxBufferEvents = 2000, maxFlushInterval = 1000, reconnectTimeout = 1000) {
         this.logger = logger;
         this.host = host;
         this.port = port;
         this.client = null;
         this.reconnectTimeout = reconnectTimeout;
-        this.eventQueue = new Queue(highWaterMark);
-        this.lowWaterMark = lowWaterMark;
+        this.eventQueue = new Queue(maxBufferEvents);
+        this.minFlushEvents = minFlushEvents;
         this.maxFlushInterval = maxFlushInterval;
         this.flushTimer = null;
         this.resetFlushTimer();
@@ -53,7 +53,7 @@ class ForwardClient {
         // TODO: report event loss
         for (const ev of events)
             this.eventQueue.pushright(ev);
-        if (this.eventQueue.length >= this.lowWaterMark)
+        if (this.eventQueue.length >= this.minFlushEvents)
             this.flush();
     }
 
@@ -64,6 +64,7 @@ class ForwardClient {
             this.flush();
         }, this.maxFlushInterval);
     }
+
     flush() {
         // TODO: check number of inflight requests
         try {

@@ -2,20 +2,31 @@
 
 const net = require('net'),
       winston = require('winston'),
+      {nconf} = require('./config'),
       {ForwardClient} = require('./forward-client'),
       {Msg, Reader, getMessageWithLengthBuffer} = require('./proto');
 
-const port = 6666,
-      address = '127.0.0.1',
+
+const listenPort = nconf.get('listen:port'),
+      listenHost = nconf.get('listen:host'),
+      forward = nconf.get('forward'),
       OK = getMessageWithLengthBuffer(new Msg(true)),
       logger = new (winston.Logger)({
-          level: 'debug',
+          level: nconf.get('logging:level'),
           transports: [
               new (winston.transports.Console)({colorize: true})
+              //new (winston.transports.File)({ filename: 'somefile.log' })
           ]
       });
 
-const forwarder = new ForwardClient(logger, 'localhost', 5555, 3, 4, 5000);
+const forwarder = new ForwardClient(
+    logger,
+    forward.host,
+    forward.port,
+    forward.minFlushEvents,
+    forward.maxBufferEvents,
+    forward.maxFlushInterval,
+    forward.reconnectTimeout);
 
 const server = net.createServer((socket) => {
     const clientRepr = socket.remoteAddress + ':' + socket.remotePort;
@@ -37,6 +48,6 @@ const server = net.createServer((socket) => {
     });
 });
 
-server.listen(port, address, () => {
-    logger.info('server listening on', address + ':' + port);
+server.listen(listenPort, listenHost, () => {
+    logger.info('server listening on', listenHost + ':' + listenPort);
 });
