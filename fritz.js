@@ -1,9 +1,11 @@
 'use strict';
 
 const net = require('net'),
+      os = require('os'),
       winston = require('winston'),
+      PagerDuty = require('pagerduty'),
       {nconf} = require('./lib/config'),
-      {ForwardClient} = require('./lib/forward-client'),
+      {ForwardClient, FAILED} = require('./lib/forward-client'),
       {Msg, Reader, getMessageWithLengthBuffer} = require('./lib/proto');
 
 const transports = [];
@@ -22,6 +24,10 @@ const listenPort = nconf.get('listen:port'),
       listenHost = nconf.get('listen:host'),
       forward = nconf.get('forward'),
       maxMessageLength = nconf.get('listen:maxMessageLength'),
+      hostname = os.hostname(),
+      pager = new PagerDuty({
+          serviceKey: nconf.get('pagerduty:serviceKey')
+      }),
       OK = getMessageWithLengthBuffer(new Msg(true)),
       logger = new (winston.Logger)({
           level: nconf.get('log:level'),
@@ -35,7 +41,23 @@ const forwarder = new ForwardClient(
     forward.minFlushEvents,
     forward.maxBufferEvents,
     forward.maxFlushInterval,
-    forward.reconnectTimeout);
+    forward.reconnectTimeout,
+    (state, reason) => {
+        const service = 'fritz';
+        const incidentKey = hostname + ' ' + service;
+        const func = state === FAILED ? 'create' : 'resolve';
+        pager[func]({
+            incidentKey: incidentKey,
+            details: {
+                time: new Date().getTime(),
+                host: hostname,
+                service: service,
+                state: state,
+                reason: reason,
+            },
+            description: incidentKey + " is " + state + ' (' + reason + ')'
+        });
+    });
 
 const server = net.createServer((socket) => {
     const clientRepr = socket.remoteAddress + ':' + socket.remotePort;
