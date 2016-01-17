@@ -21,6 +21,7 @@ if (nconf.get('log:console')) {
 const listenPort = nconf.get('listen:port'),
       listenHost = nconf.get('listen:host'),
       forward = nconf.get('forward'),
+      maxMessageLength = nconf.get('listen:maxMessageLength'),
       OK = getMessageWithLengthBuffer(new Msg(true)),
       logger = new (winston.Logger)({
           level: nconf.get('log:level'),
@@ -38,7 +39,7 @@ const forwarder = new ForwardClient(
 
 const server = net.createServer((socket) => {
     const clientRepr = socket.remoteAddress + ':' + socket.remotePort;
-    const reader = new Reader();
+    const reader = new Reader(maxMessageLength);
     logger.info('client connected on', clientRepr);
     socket.on('data', (data) => {
         logger.silly('<<', data);
