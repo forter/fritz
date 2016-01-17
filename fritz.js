@@ -2,9 +2,9 @@
 
 const net = require('net'),
       winston = require('winston'),
-      {nconf} = require('./config'),
-      {ForwardClient} = require('./forward-client'),
-      {Msg, Reader, getMessageWithLengthBuffer} = require('./proto');
+      {nconf} = require('./lib/config'),
+      {ForwardClient} = require('./lib/forward-client'),
+      {Msg, Reader, getMessageWithLengthBuffer} = require('./lib/proto');
 
 const transports = [];
 if (nconf.get('log:file')) {
