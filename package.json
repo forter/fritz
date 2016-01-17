@@ -24,10 +24,5 @@
     "url": "https://github.com/forter/fritz"
   },
   "author": "Forter",
-  "licenses": [
-    {
-      "type": "APACHE 2",
-      "url": "https://raw.githubusercontent.com/forter/fritz/master/LICENSE"
-    }
-  ]
+  "license": "Apache-2.0"
 }
