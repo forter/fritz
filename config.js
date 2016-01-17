@@ -21,9 +21,10 @@ nconf
             maxFlushInterval: 1000,
             reconnectTimeout: 1000,
         },
-        logging: {
-            level: 'warn'
-            // TODO: configure transports
+        log: {
+            level: 'warn', // one of { error,  warn,  info,  verbose,  debug,  silly }
+            file: '/var/log/fritz.log',
+            console: true
         }
     });
 

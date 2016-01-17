@@ -6,17 +6,25 @@ const net = require('net'),
       {ForwardClient} = require('./forward-client'),
       {Msg, Reader, getMessageWithLengthBuffer} = require('./proto');
 
+const transports = [];
+if (nconf.get('log:file')) {
+    transports.push(
+        new (winston.transports.File)({filename: nconf.get('log:file')})
+    );
+}
+if (nconf.get('log:console')) {
+    transports.push(
+        new (winston.transports.Console)({colorize: true})
+    );
+}
 
 const listenPort = nconf.get('listen:port'),
       listenHost = nconf.get('listen:host'),
       forward = nconf.get('forward'),
       OK = getMessageWithLengthBuffer(new Msg(true)),
       logger = new (winston.Logger)({
-          level: nconf.get('logging:level'),
-          transports: [
-              new (winston.transports.Console)({colorize: true})
-              //new (winston.transports.File)({ filename: 'somefile.log' })
-          ]
+          level: nconf.get('log:level'),
+          transports: transports
       });
 
 const forwarder = new ForwardClient(
@@ -45,6 +53,9 @@ const server = net.createServer((socket) => {
             logger.error('Exception in socket', clientRepr, ':', error);
             socket.end();
         }
+    })
+    .on('end', () => {
+        logger.info('client diconnected on', clientRepr);
     });
 });
 
