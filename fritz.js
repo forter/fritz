@@ -41,7 +41,7 @@ const server = net.createServer((socket) => {
     const reader = new Reader();
     logger.info('client connected on', clientRepr);
     socket.on('data', (data) => {
-        logger.debug('<<', data);
+        logger.silly('<<', data);
         try {
             const messages = reader.readMessagesFromBuffer(data);
             for (const msg of messages) {

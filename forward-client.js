@@ -26,7 +26,7 @@ class ForwardClient {
           host: this.host,
           port: this.port
         }, () => {
-            this.logger.info('Riemann client connected');
+            this.logger.info('Riemann client connected to:', this.host + ':' + this.port);
             this.client = client;
         }).on('end', () => {
             this.logger.warn('Riemann client disconnected, attempting reconnect in ', this.reconnectTimeout, 'ms');
@@ -72,9 +72,9 @@ class ForwardClient {
                 const message = new Msg();
                 // if no events are set, acts as a keepalive packet
                 message.events = this.eventQueue.toArray();
-                this.logger.info('flushing', message.events.length, 'events');
+                this.logger.debug('flushing', message.events.length, 'events');
                 const data = getMessageWithLengthBuffer(message)
-                this.logger.debug('>>', data);
+                this.logger.silly('>>', data);
                 this.client.write(data);
                 this.eventQueue = new Queue(this.eventQueue.maxLength);
             }
