@@ -15,8 +15,9 @@ if (nconf.get('log:file')) {
     );
 }
 if (nconf.get('log:console')) {
+    const colorize = nconf.get('log:console') === 'color';
     transports.push(
-        new (winston.transports.Console)({colorize: true})
+        new (winston.transports.Console)({colorize: colorize})
     );
 }
 
