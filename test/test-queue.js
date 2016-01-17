@@ -1,6 +1,6 @@
 'use strict';
 
-const {Queue} = require('../queue'),
+const {Queue} = require('../lib/queue'),
       should = require('should');
 
 describe('Queue', () => {
@@ -45,6 +45,23 @@ describe('Queue', () => {
             it('Does nothing when empty', () => {
                 q.popleft();
                 q.toArray().should.eql([]);
+            });
+        });
+
+        describe('#isFull()', () => {
+            it('Returns false when empty', () => {
+                q.isFull().should.be.false;
+            });
+
+            it('Returns false when semi-full', () => {
+                q.pushright('a');
+                q.isFull().should.be.false;
+            });
+
+            it('Returns true when full', () => {
+                q.pushright('a');
+                q.pushright('b');
+                q.isFull().should.be.true;
             });
         });
     });
