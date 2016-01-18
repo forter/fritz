@@ -60,6 +60,11 @@ const forwarder = new ForwardClient(
         });
     });
 
+
+for (const key of ['conf', 'listen', 'forward', 'log', 'pagerduty']) {
+    logger.debug('config.' + key + ':', nconf.get(key));
+}
+
 const server = net.createServer((socket) => {
     const clientRepr = socket.remoteAddress + ':' + socket.remotePort;
     const reader = new Reader(maxMessageLength);
