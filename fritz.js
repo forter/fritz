@@ -85,6 +85,9 @@ const server = net.createServer((socket) => {
     })
     .on('end', () => {
         logger.info('client diconnected on', clientRepr);
+    })
+    .on('error', (err) => {
+        logger.error('client error on', clientRepr, ':', err);
     });
 });
 
