@@ -42,6 +42,16 @@ describe('Reader', () => {
                 const [output] = r.readMessagesFromBuffer(chunks[1]);
                 output.should.eql(input);
             });
+
+            it('Handles parial message header', () => {
+                const input = new Msg({events: [new Event({service: 'test service', host: 'localhost'})]});
+                const data = serialize(input);
+                const chunks = [data.slice(0, 2), data.slice(2, data.length)];
+                const messages = r.readMessagesFromBuffer(chunks[0]);
+                messages.should.be.empty();
+                const [output] = r.readMessagesFromBuffer(chunks[1]);
+                output.should.eql(input);
+            });
         });
     });
 });
