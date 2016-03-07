@@ -6,7 +6,7 @@ const net = require('net'),
       PagerDuty = require('pagerduty'),
       {nconf} = require('./lib/config'),
       {ForwardClient, FAILED} = require('./lib/forward-client'),
-      {Msg, Reader, getMessageWithLengthBuffer} = require('./lib/proto');
+      {Msg, Reader, serialize} = require('./lib/proto');
 
 const transports = [];
 if (nconf.get('log:file')) {
@@ -29,7 +29,7 @@ const listenPort = nconf.get('listen:port'),
       pager = new PagerDuty({
           serviceKey: nconf.get('pagerduty:serviceKey')
       }),
-      OK = getMessageWithLengthBuffer(new Msg(true)),
+      OK = serialize(new Msg(true)),
       logger = new (winston.Logger)({
           level: nconf.get('log:level'),
           transports: transports
