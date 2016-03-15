@@ -6,7 +6,7 @@ const net = require('net'),
       PagerDuty = require('pagerduty'),
       {nconf} = require('./lib/config'),
       {ForwardClient, FAILED} = require('./lib/forward-client'),
-      {Msg, Reader, serialize} = require('./lib/proto');
+      {Msg, Reader, serialize, deserialize} = require('./lib/proto');
 
 const transports = [];
 if (nconf.get('log:file')) {
@@ -73,7 +73,8 @@ const server = net.createServer((socket) => {
         logger.silly('<<', data);
         try {
             const messages = reader.readMessagesFromBuffer(data);
-            for (const msg of messages) {
+            for (const raw of messages) {
+                const msg = deserialize(raw);
                 logger.debug('Read message from', clientRepr, ':', msg);
                 socket.write(OK);
                 forwarder.enqueue(msg.events);

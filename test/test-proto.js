@@ -1,6 +1,6 @@
 'use strict';
 
-const {Reader, Msg, Event, serialize} = require('../lib/proto'),
+const {Reader, Msg, Event, serialize, deserialize} = require('../lib/proto'),
       should = require('should');
 
 describe('Reader', () => {
@@ -16,7 +16,7 @@ describe('Reader', () => {
                 const input = new Msg({events: [new Event({service: 'test service', host: 'localhost'})]});
                 const data = serialize(input);
                 const [output] = r.readMessagesFromBuffer(data);
-                output.should.eql(input);
+                deserialize(output).should.eql(input);
             });
 
             it('Returns a multiple messages', () => {
@@ -24,7 +24,7 @@ describe('Reader', () => {
                 const input = [message, message];
                 const data = Buffer.concat(input.map(serialize));
                 const output = r.readMessagesFromBuffer(data);
-                output.should.eql(input);
+                output.map(deserialize).should.eql(input);
             });
 
             it('Throws on long message', () => {
@@ -40,7 +40,7 @@ describe('Reader', () => {
                 const messages = r.readMessagesFromBuffer(chunks[0]);
                 messages.should.be.empty();
                 const [output] = r.readMessagesFromBuffer(chunks[1]);
-                output.should.eql(input);
+                deserialize(output).should.eql(input);
             });
 
             it('Handles parial message header', () => {
@@ -50,7 +50,7 @@ describe('Reader', () => {
                 const messages = r.readMessagesFromBuffer(chunks[0]);
                 messages.should.be.empty();
                 const [output] = r.readMessagesFromBuffer(chunks[1]);
-                output.should.eql(input);
+                deserialize(output).should.eql(input);
             });
         });
     });
