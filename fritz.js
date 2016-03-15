@@ -1,7 +1,6 @@
 'use strict';
 
 const net = require('net'),
-      os = require('os'),
       winston = require('winston'),
       PagerDuty = require('pagerduty'),
       {nconf} = require('./lib/config'),
@@ -25,7 +24,7 @@ const listenPort = nconf.get('listen:port'),
       listenHost = nconf.get('listen:host'),
       forward = nconf.get('forward'),
       maxMessageLength = nconf.get('listen:maxMessageLength'),
-      hostname = os.hostname(),
+      hostname = nconf.get('hostname'),
       pager = new PagerDuty({
           serviceKey: nconf.get('pagerduty:serviceKey')
       }),
