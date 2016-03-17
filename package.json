@@ -4,7 +4,6 @@
   "version": "0.0.1",
   "private": false,
   "dependencies": {
-    "double-ended-queue": "^2.1.0-0",
     "nconf": "^0.8.2",
     "pagerduty": "0.0.3",
     "protobufjs": "^5.0.1",
