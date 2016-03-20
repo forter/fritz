@@ -2,7 +2,7 @@
 
 const net = require('net'),
       winston = require('winston'),
-      PagerDuty = require('pagerduty'),
+      PagerDuty = require('./lib/pagerduty'),
       {nconf} = require('./lib/config'),
       {ForwardClient, FAILED} = require('./lib/forward-client'),
       {Msg, Reader, serialize, deserialize} = require('./lib/proto');
@@ -25,9 +25,7 @@ const listenPort = nconf.get('listen:port'),
       forward = nconf.get('forward'),
       maxMessageLength = nconf.get('listen:maxMessageLength'),
       hostname = nconf.get('hostname'),
-      pager = new PagerDuty({
-          serviceKey: nconf.get('pagerduty:serviceKey')
-      }),
+      pager = new PagerDuty(nconf.get('pagerduty:serviceKey')),
       OK = serialize(new Msg(true)),
       logger = new (winston.Logger)({
           level: nconf.get('log:level'),
@@ -45,9 +43,10 @@ const forwarder = new ForwardClient(
     (state, reason) => {
         const service = 'fritz';
         const incidentKey = hostname + ' ' + service;
-        const func = state === FAILED ? 'create' : 'resolve';
-        pager[func]({
-            incidentKey: incidentKey,
+        const eventType = state === FAILED ? 'trigger' : 'resolve';
+        pager.call({
+            incidentKey,
+            eventType,
             details: {
                 time: new Date().getTime(),
                 host: hostname,
