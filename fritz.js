@@ -7,6 +7,9 @@ const net = require('net'),
       {ForwardClient, FAILED} = require('./lib/forward-client'),
       {Msg, Reader, serialize, deserialize} = require('./lib/proto');
 
+// for the pairwise operator
+require('rxjs/add/operator/pairwise');
+
 const transports = [];
 if (nconf.get('log:file')) {
     transports.push(
@@ -39,29 +42,44 @@ const forwarder = new ForwardClient(
     forward.minFlushEvents,
     forward.maxBufferEvents,
     forward.maxFlushInterval,
-    forward.reconnectTimeout,
-    (state, reason) => {
-        const service = 'fritz';
-        const incidentKey = hostname + ' ' + service;
-        const eventType = state === FAILED ? 'trigger' : 'resolve';
-        pager.call({
-            incidentKey,
-            eventType,
-            details: {
-                time: new Date().getTime(),
-                host: hostname,
-                service: service,
-                state: state,
-                reason: reason,
-            },
-            description: incidentKey + " is " + state + ' (' + reason + ')'
-        });
-    });
+    forward.reconnectTimeout)
 
+const stateChangeStream = forwarder.state
+    .pairwise()
+    .filter(([[a], [b]]) => a !== b)
+    .map(pair => pair[1]);
+
+const stateStableStream = stateChangeStream
+    .bufferTime(2000)
+    .filter(x => x.length === 1)
+    .map(buffer => buffer[0]);
+
+stateStableStream.subscribe(([state, reason]) => {
+    const func = state === FAILED ? 'error' : 'info';
+    logger[func]('Forward client state changed to',  state);
+
+    const service = 'fritz';
+    const incidentKey = hostname + ' ' + service;
+    const eventType = state === FAILED ? 'trigger' : 'resolve';
+    pager.call({
+        incidentKey,
+        eventType,
+        details: {
+            time: new Date().getTime(),
+            host: hostname,
+            service: service,
+            state: state,
+            reason: reason,
+        },
+        description: incidentKey + " is " + state + ' (' + reason + ')'
+    });
+});
 
 for (const key of ['conf', 'listen', 'forward', 'log', 'pagerduty']) {
     logger.debug('config.' + key + ':', nconf.get(key));
 }
+
+forwarder.connect();
 
 const server = net.createServer((socket) => {
     const clientRepr = socket.remoteAddress + ':' + socket.remotePort;
