@@ -58,17 +58,18 @@ stateChangeStream.subscribe(state => {
     const service = 'fritz event loss';
     const incidentKey = hostname + ' ' + service;
     const eventType = state === 'failed' ? 'trigger' : 'resolve';
+    const lostEvents = forwarder.lostEventsCounter.getValue();
     pager.call({
         incidentKey,
         eventType,
         details: {
             time: new Date().getTime(),
             host: hostname,
-            service: service,
-            state: state,
-            reason: reason,
+            service,
+            state,
+            lostEvents
         },
-        description: incidentKey + " is " + state + ' (' + forwarder.lostEventsCounter.getValue() + ')'
+        description: incidentKey + " is " + state + ' (' + lostEvents + ')'
     });
 });
 
