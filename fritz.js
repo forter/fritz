@@ -4,7 +4,7 @@ const net = require('net'),
       winston = require('winston'),
       PagerDuty = require('./lib/pagerduty'),
       {nconf} = require('./lib/config'),
-      {ForwardClient, FAILED} = require('./lib/forward-client'),
+      {ForwardClient} = require('./lib/forward-client'),
       {Msg, Reader, serialize, deserialize} = require('./lib/proto');
 
 // for the pairwise operator
@@ -44,23 +44,20 @@ const forwarder = new ForwardClient(
     forward.maxFlushInterval,
     forward.reconnectTimeout)
 
-const stateChangeStream = forwarder.state
-    .pairwise()
-    .filter(([[a], [b]]) => a !== b)
-    .map(pair => pair[1]);
-
-const stateStableStream = stateChangeStream
+const stateChangeStream = forwarder.lostEventsCounter
     .bufferTime(2000)
-    .filter(x => x.length === 1)
-    .map(buffer => buffer[0]);
+    .map(events => events.length === 0 ? 'passed' : 'failed')
+    .pairwise()
+    .filter(([a, b]) => a !== b)
+    .map(([first,  second]) => second);
 
-stateStableStream.subscribe(([state, reason]) => {
-    const func = state === FAILED ? 'error' : 'info';
+stateChangeStream.subscribe(state => {
+    const func = state === 'failed' ? 'error' : 'info';
     logger[func]('Forward client state changed to',  state);
 
-    const service = 'fritz';
+    const service = 'fritz event loss';
     const incidentKey = hostname + ' ' + service;
-    const eventType = state === FAILED ? 'trigger' : 'resolve';
+    const eventType = state === 'failed' ? 'trigger' : 'resolve';
     pager.call({
         incidentKey,
         eventType,
@@ -71,7 +68,7 @@ stateStableStream.subscribe(([state, reason]) => {
             state: state,
             reason: reason,
         },
-        description: incidentKey + " is " + state + ' (' + reason + ')'
+        description: incidentKey + " is " + state + ' (' + forwarder.lostEventsCounter.getValue() + ')'
     });
 });
 
