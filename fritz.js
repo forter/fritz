@@ -39,12 +39,12 @@ const forwarder = new ForwardClient(
     logger,
     forward.host,
     forward.port,
-    forward.minFlushEvents,
-    forward.maxBufferEvents,
+    forward.minFlushBufferSize,
+    forward.maxBufferSize,
     forward.maxFlushInterval,
     forward.reconnectTimeout)
 
-const stateChangeStream = forwarder.lostEventsCounter
+const stateChangeStream = forwarder.messageLossCounter
     .bufferTime(2000)
     .map(events => events.length === 0 ? 'passed' : 'failed')
     .pairwise()
@@ -55,10 +55,10 @@ stateChangeStream.subscribe(state => {
     const func = state === 'failed' ? 'error' : 'info';
     logger[func]('Forward client state changed to',  state);
 
-    const service = 'fritz event loss';
+    const service = 'fritz message loss';
     const incidentKey = hostname + ' ' + service;
     const eventType = state === 'failed' ? 'trigger' : 'resolve';
-    const lostEvents = forwarder.lostEventsCounter.getValue();
+    const lostMessages = forwarder.messageLossCounter.getValue();
     pager.call({
         incidentKey,
         eventType,
@@ -67,9 +67,9 @@ stateChangeStream.subscribe(state => {
             host: hostname,
             service,
             state,
-            lostEvents
+            lostMessages
         },
-        description: incidentKey + " is " + state + ' (' + lostEvents + ')'
+        description: incidentKey + " is " + state + ' (' + lostMessages + ')'
     });
 });
 
@@ -87,12 +87,10 @@ const server = net.createServer((socket) => {
         logger.silly('<<', data);
         try {
             const messages = reader.readMessagesFromBuffer(data);
-            for (const raw of messages) {
-                const msg = deserialize(raw);
-                logger.debug('Read message from', clientRepr, ':', msg);
+            for (const _ in messages) {
                 socket.write(OK);
-                forwarder.enqueue(msg.events);
             }
+            forwarder.enqueue(messages);
         } catch (error) {
             logger.error('Exception in socket', clientRepr, ':', error);
             socket.end();
