@@ -109,3 +109,8 @@ const server = net.createServer((socket) => {
 server.listen(listenPort, listenHost, () => {
     logger.info('server listening on', listenHost + ':' + listenPort);
 });
+
+
+for (const sig of ['SIGINT', 'SIGTERM']) {
+    process.on(sig, process.exit);
+}
