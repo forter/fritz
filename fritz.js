@@ -41,7 +41,8 @@ const forwarder = new ForwardClient(
     forward.minFlushBufferSize,
     forward.maxBufferSize,
     forward.maxFlushInterval,
-    forward.reconnectTimeout)
+    forward.reconnectTimeout,
+    forward.flushTimeout);
 
 if (nconf.get('pagerduty:serviceKey')) {
     const pager = new PagerDuty(nconf.get('pagerduty:serviceKey'));
@@ -99,7 +100,7 @@ const server = net.createServer((socket) => {
         }
     })
     .on('end', () => {
-        logger.info('client diconnected on', clientRepr);
+        logger.info('client disconnected on', clientRepr);
     })
     .on('error', (err) => {
         logger.error('client error on', clientRepr, ':', err);
