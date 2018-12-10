@@ -5,7 +5,7 @@ const net = require('net'),
       PagerDuty = require('./lib/pagerduty'),
       {nconf} = require('./lib/config'),
       {ForwardClient} = require('./lib/forward-client'),
-      {Msg, Reader, serialize, deserialize} = require('./lib/proto');
+      {Msg, Reader, serialize} = require('./lib/proto');
 
 // for the pairwise operator
 require('rxjs/add/operator/pairwise');
@@ -28,6 +28,7 @@ const listenPort = nconf.get('listen:port'),
       forward = nconf.get('forward'),
       maxMessageLength = nconf.get('listen:maxMessageLength'),
       hostname = nconf.get('hostname'),
+      highPriority = nconf.get('highPriority'),
       OK = serialize(new Msg(true)),
       logger = new (winston.Logger)({
           level: nconf.get('log:level'),
@@ -42,7 +43,8 @@ const forwarder = new ForwardClient(
     forward.maxBufferSize,
     forward.maxFlushInterval,
     forward.reconnectTimeout,
-    forward.flushTimeout);
+    forward.flushTimeout,
+    highPriority);
 
 if (nconf.get('pagerduty:serviceKey')) {
     const pager = new PagerDuty(nconf.get('pagerduty:serviceKey'));
@@ -76,7 +78,7 @@ if (nconf.get('pagerduty:serviceKey')) {
     });
 }
 
-for (const key of ['conf', 'listen', 'forward', 'log', 'pagerduty']) {
+for (const key of ['conf', 'listen', 'forward', 'log', 'pagerduty', 'highPriority']) {
     logger.debug('config.' + key + ':', nconf.get(key));
 }
 
