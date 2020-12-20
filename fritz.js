@@ -9,7 +9,7 @@ const net = require('net'),
 
 // for the pairwise operator
 require('rxjs/add/operator/pairwise');
-console.log("hello")
+console.log("hello");
 const transports = [];
 if (nconf.get('log:file')) {
     transports.push(
@@ -33,7 +33,7 @@ const listenPort = nconf.get('listen:port'),
           level: nconf.get('log:level'),
           transports: transports
       });
-
+logger.info("trying 1");
 const forwarder = new ForwardClient(
     logger,
     forward.host,
