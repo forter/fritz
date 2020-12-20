@@ -9,7 +9,7 @@ const net = require('net'),
 
 // for the pairwise operator
 require('rxjs/add/operator/pairwise');
-
+console.log("hello")
 const transports = [];
 if (nconf.get('log:file')) {
     transports.push(
