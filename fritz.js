@@ -1,5 +1,5 @@
 'use strict';
-
+console.log("before everything");
 const net = require('net'),
       winston = require('winston'),
       PagerDuty = require('./lib/pagerduty'),
