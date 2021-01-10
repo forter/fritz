@@ -34,8 +34,6 @@ const listenPort = nconf.get('listen:port'),
           transports: transports
       });
 
-console.log("forward.host = "+ forward.host)
-
 const forwarder = new ForwardClient(
     logger,
     forward.host,
