@@ -66,7 +66,7 @@ if (nconf.get('pagerduty:serviceKey')) {
             incidentKey,
             eventType,
             details: {
-                time: new Date().getTime(),
+                time: new Date().toTimeString(),
                 vm_data: vm_data,
                 service,
                 state,
