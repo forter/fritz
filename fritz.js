@@ -46,35 +46,36 @@ const forwarder = new ForwardClient(
     forward.flushTimeout);
 
 if (nconf.get('pagerduty:serviceKey')) {
-    const pager = new PagerDuty(nconf.get('pagerduty:serviceKey'));
-    const stateChangeStream = forwarder.messageLossCounter
-        .bufferTime(2000)
-        .map(events => events.length === 0 ? 'passed' : 'failed')
-        .pairwise()
-        .filter(([a, b]) => a !== b)
-        .map(([first,  second]) => second);
+    const pager = new PagerDuty(nconf.get('pagerduty:serviceKey')),
+          timeResolutionSecs = nconf.get('pagerduty:timeResolutionSecs'),
+          lostMessagesThreshold = nconf.get('pagerduty:lostMessagesThreshold');
+    forwarder.messageLossCounter
+        .bufferTime(timeResolutionSecs * 1000)
+        .map(events => {
+            const totalMessagesLost = events.reduce((a, b) => a + b, 0)
 
-    stateChangeStream.subscribe(state => {
-        const func = state === 'failed' ? 'error' : 'info';
-        logger[func]('Forward client state changed to',  state);
+            const state = totalMessagesLost >= lostMessagesThreshold ? 'failed' : 'passed';
 
-        const service = 'fritz message loss';
-        const incidentKey = hostname + ' ' + service;
-        const eventType = state === 'failed' ? 'trigger' : 'resolve';
-        const lostMessages = forwarder.messageLossCounter.getValue();
-        pager.call({
-            incidentKey,
-            eventType,
-            details: {
-                time: new Date().toTimeString(),
-                vm_data: vm_data,
-                service,
-                state,
-                lostMessages
-            },
-            description: incidentKey + " is " + state + ' (' + lostMessages + ')'
+            const func = state === 'failed' ? 'error' : 'info';
+            logger[func]('Forward client state changed to',  state);
+
+            const service = 'fritz message loss';
+            const incidentKey = hostname + ' ' + service;
+            const eventType = state === 'failed' ? 'trigger' : 'resolve';
+            pager.call({
+                incidentKey,
+                eventType,
+                details: {
+                    time: new Date().toTimeString(),
+                    vm_data,
+                    service,
+                    state,
+                    totalMessagesLost
+                },
+                description: hostname + ' fritz dropped over ' + lostMessagesThreshold + ' in the last ' +
+                    timeResolutionSecs + ' secs (' + totalMessagesLost + ' lost messages)'
+            });
         });
-    });
 }
 
 for (const key of ['conf', 'listen', 'forward', 'log', 'pagerduty']) {
