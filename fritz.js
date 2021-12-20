@@ -85,7 +85,7 @@ forwarder.connect();
 
 const server = net.createServer((socket) => {
     const clientRepr = socket.remoteAddress + ':' + socket.remotePort;
-    const reader = new Reader(maxMessageLength);
+    const reader = new Reader(maxMessageLength, logger);
     logger.info('client connected on', clientRepr);
     socket.on('data', (data) => {
         logger.silly('<<', data);
