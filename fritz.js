@@ -27,7 +27,8 @@ const listenPort = nconf.get('listen:port'),
       listenHost = nconf.get('listen:host'),
       forward = nconf.get('forward'),
       maxMessageLength = nconf.get('listen:maxMessageLength'),
-      hostname = nconf.get('hostname'),
+      vm_data = nconf.get('pagerduty:vm_data'),
+      hostname = vm_data['hostname'],
       OK = serialize(new Msg(true)),
       logger = new (winston.Logger)({
           level: nconf.get('log:level'),
@@ -66,7 +67,7 @@ if (nconf.get('pagerduty:serviceKey')) {
             eventType,
             details: {
                 time: new Date().getTime(),
-                host: hostname,
+                vm_data: vm_data,
                 service,
                 state,
                 lostMessages
