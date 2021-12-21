@@ -73,7 +73,9 @@ if (nconf.get('pagerduty:serviceKey')) {
                     totalMessagesLost
                 },
                 description: hostname + ' fritz dropped over ' + lostMessagesThreshold + ' in the last ' +
-                    timeResolutionSecs + ' secs (' + totalMessagesLost + ' lost messages)'
+                    timeResolutionSecs + ' secs (' + totalMessagesLost + ' lost messages). ' +
+                    'Try setting a larger buffer than the current ' + forward.maxBufferSize + ' bytes ' +
+                    ' or removing unneeded data like lengthy stack traces from your events.'
             });
         });
 }
