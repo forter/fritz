@@ -27,7 +27,8 @@ const listenPort = nconf.get('listen:port'),
       listenHost = nconf.get('listen:host'),
       forward = nconf.get('forward'),
       maxMessageLength = nconf.get('listen:maxMessageLength'),
-      hostname = nconf.get('hostname'),
+      vm_data = nconf.get('pagerduty:vm_data'),
+      hostname = vm_data['hostname'],
       OK = serialize(new Msg(true)),
       logger = new (winston.Logger)({
           level: nconf.get('log:level'),
@@ -45,35 +46,37 @@ const forwarder = new ForwardClient(
     forward.flushTimeout);
 
 if (nconf.get('pagerduty:serviceKey')) {
-    const pager = new PagerDuty(nconf.get('pagerduty:serviceKey'));
-    const stateChangeStream = forwarder.messageLossCounter
-        .bufferTime(2000)
-        .map(events => events.length === 0 ? 'passed' : 'failed')
-        .pairwise()
-        .filter(([a, b]) => a !== b)
-        .map(([first,  second]) => second);
+    const pager = new PagerDuty(nconf.get('pagerduty:serviceKey')),
+          alertCheckIntervalSecs = nconf.get('pagerduty:alertCheckIntervalSecs'),
+          lostMessagesThreshold = nconf.get('pagerduty:lostMessagesThreshold');
+    forwarder.messageLossCounter
+        .bufferTime(alertCheckIntervalSecs * 1000)
+        .map(events => {
+            const totalMessagesLost = events.reduce((a, b) => a + b, 0)
 
-    stateChangeStream.subscribe(state => {
-        const func = state === 'failed' ? 'error' : 'info';
-        logger[func]('Forward client state changed to',  state);
+            const state = totalMessagesLost >= lostMessagesThreshold ? 'failed' : 'passed';
 
-        const service = 'fritz message loss';
-        const incidentKey = hostname + ' ' + service;
-        const eventType = state === 'failed' ? 'trigger' : 'resolve';
-        const lostMessages = forwarder.messageLossCounter.getValue();
-        pager.call({
-            incidentKey,
-            eventType,
-            details: {
-                time: new Date().getTime(),
-                host: hostname,
-                service,
-                state,
-                lostMessages
-            },
-            description: incidentKey + " is " + state + ' (' + lostMessages + ')'
+            const func = state === 'failed' ? 'error' : 'info';
+            logger[func]('Forward client state changed to',  state);
+
+            const service = 'fritz message loss';
+            const incidentKey = hostname + ' ' + service;
+            const eventType = state === 'failed' ? 'trigger' : 'resolve';
+            pager.call({
+                incidentKey,
+                eventType,
+                details: {
+                    time: new Date().toTimeString(),
+                    vm_data,
+                    service,
+                    state,
+                    totalMessagesLost
+                },
+                description: hostname + ' fritz dropped over ' + lostMessagesThreshold + ' in the last ' +
+                    alertCheckIntervalSecs + ' secs (' + totalMessagesLost + ' lost messages). ' +
+                    'See Fritz doc\'s Alerts section - https://forter.atlassian.net/wiki/spaces/ENG/pages/7897784/Fritz+-+Riemann+Proxy+System+Overview'
+            });
         });
-    });
 }
 
 for (const key of ['conf', 'listen', 'forward', 'log', 'pagerduty']) {
@@ -84,7 +87,7 @@ forwarder.connect();
 
 const server = net.createServer((socket) => {
     const clientRepr = socket.remoteAddress + ':' + socket.remotePort;
-    const reader = new Reader(maxMessageLength);
+    const reader = new Reader(maxMessageLength, logger);
     logger.info('client connected on', clientRepr);
     socket.on('data', (data) => {
         logger.silly('<<', data);
