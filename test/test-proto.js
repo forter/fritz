@@ -35,7 +35,7 @@ describe('Reader', () => {
                 output.map(deserialize).should.eql([]);
             });
 
-            it('Handles parial messages', () => {
+            it('Handles partial messages', () => {
                 const input = new Msg({events: [new Event({service: 'test service', host: 'localhost'})]});
                 const data = serialize(input);
                 const chunks = [data.slice(0, data.length - 2), data.slice(data.length - 2, data.length)];
@@ -45,7 +45,7 @@ describe('Reader', () => {
                 deserialize(output).should.eql(input);
             });
 
-            it('Handles parial message header', () => {
+            it('Handles partial message header', () => {
                 const input = new Msg({events: [new Event({service: 'test service', host: 'localhost'})]});
                 const data = serialize(input);
                 const chunks = [data.slice(0, 2), data.slice(2, data.length)];
