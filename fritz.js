@@ -47,10 +47,10 @@ const forwarder = new ForwardClient(
 
 if (nconf.get('pagerduty:serviceKey')) {
     const pager = new PagerDuty(nconf.get('pagerduty:serviceKey')),
-          timeResolutionSecs = nconf.get('pagerduty:timeResolutionSecs'),
+          alertCheckIntervalSecs = nconf.get('pagerduty:alertCheckIntervalSecs'),
           lostMessagesThreshold = nconf.get('pagerduty:lostMessagesThreshold');
     forwarder.messageLossCounter
-        .bufferTime(timeResolutionSecs * 1000)
+        .bufferTime(alertCheckIntervalSecs * 1000)
         .map(events => {
             const totalMessagesLost = events.reduce((a, b) => a + b, 0)
 
@@ -73,7 +73,7 @@ if (nconf.get('pagerduty:serviceKey')) {
                     totalMessagesLost
                 },
                 description: hostname + ' fritz dropped over ' + lostMessagesThreshold + ' in the last ' +
-                    timeResolutionSecs + ' secs (' + totalMessagesLost + ' lost messages). ' +
+                    alertCheckIntervalSecs + ' secs (' + totalMessagesLost + ' lost messages). ' +
                     'Try setting a larger buffer than the current ' + forward.maxBufferSize + ' bytes ' +
                     ' or removing unneeded data like lengthy stack traces from your events.'
             });
