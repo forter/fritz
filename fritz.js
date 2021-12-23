@@ -74,8 +74,7 @@ if (nconf.get('pagerduty:serviceKey')) {
                 },
                 description: hostname + ' fritz dropped over ' + lostMessagesThreshold + ' in the last ' +
                     alertCheckIntervalSecs + ' secs (' + totalMessagesLost + ' lost messages). ' +
-                    'Try setting a larger buffer than the current ' + forward.maxBufferSize + ' bytes ' +
-                    ' or removing unneeded data like lengthy stack traces from your events.'
+                    'See Fritz doc\'s Alerts section - https://forter.atlassian.net/wiki/spaces/ENG/pages/7897784/Fritz+-+Riemann+Proxy+System+Overview'
             });
         });
 }
