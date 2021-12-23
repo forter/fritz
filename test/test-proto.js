@@ -1,14 +1,15 @@
 'use strict';
 
 const {Reader, Msg, Event, serialize, deserialize} = require('../lib/proto'),
-      should = require('should');
+      should = require('should'),
+      winston = require('winston');
 
 describe('Reader', () => {
     let r;
 
     describe('with maxMessageLength', () => {
         beforeEach(() => {
-            r = new Reader(30);
+            r = new Reader(30, new (winston.Logger));
         });
 
         describe('#readMessagesFromBuffer()', () => {
@@ -27,10 +28,11 @@ describe('Reader', () => {
                 output.map(deserialize).should.eql(input);
             });
 
-            it('Throws on long message', () => {
+            it('Skip on long message', () => {
                 const input = new Msg({events: [new Event({service: 'test service abc 123', host: 'localhost'})]});
                 const data = serialize(input);
-                (() => r.readMessagesFromBuffer(data)).should.throw('Message length exceeded max message length:35/30');
+                const output = r.readMessagesFromBuffer(data);
+                output.map(deserialize).should.eql([]);
             });
 
             it('Handles parial messages', () => {
