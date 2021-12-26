@@ -54,7 +54,7 @@ if (nconf.get('pagerduty:serviceKey')) {
         .map(events => {
             events.reduce((a, b) => a + b, 0)
         })
-    messgeLossTotalsStream.subscribe(total => {
+    messgeLossTotalsStream.subscribe(totalMessagesLost => {
         const state = totalMessagesLost >= lostMessagesThreshold ? 'failed' : 'passed';
 
         const func = state === 'failed' ? 'error' : 'info';
