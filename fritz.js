@@ -58,7 +58,8 @@ if (nconf.get('pagerduty:serviceKey')) {
         const state = totalMessagesLost >= lostMessagesThreshold ? 'failed' : 'passed';
 
         const func = state === 'failed' ? 'error' : 'info';
-        logger[func]('Forward client state changed to',  state);
+        logger[func]('Forward client state is ' + state + ' (dropped ' + totalMessagesLost + ' in the last '
+        + alertCheckIntervalSecs + 'secs)');
 
         const service = 'fritz message loss';
         const incidentKey = hostname + ' ' + service;
