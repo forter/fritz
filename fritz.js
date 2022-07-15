@@ -1,23 +1,11 @@
 const net = require("net");
-const winston = require("winston");
 const PagerDuty = require("./lib/pagerduty");
 const { map, bufferTime } = require("rxjs/operators");
 const { nconf } = require("./lib/config");
 const { ForwardClient } = require("./lib/forward-client");
 const { Msg, Reader, serialize } = require("./lib/proto");
 const process = require("node:process");
-
-const transports = [];
-if (nconf.get("log:file")) {
-  transports.push(new winston.transports.File({ filename: nconf.get("log:file") }));
-}
-if (nconf.get("log:console")) {
-  transports.push(
-    new winston.transports.Console({
-      format: winston.format.combine(winston.format.timestamp(), winston.format.colorize(), winston.format.cli()),
-    })
-  );
-}
+const { logger } = require("./lib/logger");
 
 const listenPort = nconf.get("listen:port");
 const listenHost = nconf.get("listen:host");
@@ -26,10 +14,6 @@ const maxMessageLength = nconf.get("listen:maxMessageLength");
 const vm_data = nconf.get("pagerduty:vm_data");
 const hostname = vm_data["hostname"];
 const OK = serialize(Msg.create({ ok: true }));
-const logger = new winston.createLogger({
-  level: nconf.get("log:level"),
-  transports: transports,
-});
 
 logger.debug(`Starting forward client from ${forward.host}:${forward.port}`);
 

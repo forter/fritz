@@ -1,8 +1,17 @@
 require("should");
 const { Reader, Msg, Event, serialize, deserialize } = require("../lib/proto");
+const { logger } = require("../lib/logger");
 
 describe("Reader", () => {
   let r;
+
+  before(() => {
+    logger.silent = true;
+  });
+
+  after(() => {
+    logger.silent = false;
+  });
 
   describe("with maxMessageLength", () => {
     beforeEach(() => {
@@ -28,10 +37,8 @@ describe("Reader", () => {
       it("Throws on long message", () => {
         const input = Msg.create({ events: [Event.create({ service: "test service abc 123", host: "localhost" })] });
         const data = serialize(input);
-        const messages =  r.readMessagesFromBuffer(data);
-        console.log(messages);
-
-        // (() => r.readMessagesFromBuffer(data)).should.throw("Message length exceeded max message length:35/30");
+        const messages = r.readMessagesFromBuffer(data);
+        messages.should.be.empty();
       });
 
       it("Handles partial messages", () => {
