@@ -1,11 +1,11 @@
 "use strict";
 
-const net = require("net"),
-  winston = require("winston"),
-  PagerDuty = require("./lib/pagerduty"),
-  { nconf } = require("./lib/config"),
-  { ForwardClient } = require("./lib/forward-client"),
-  { Msg, Reader, serialize, deserialize } = require("./lib/proto");
+const net = require("net");
+const winston = require("winston");
+const PagerDuty = require("./lib/pagerduty");
+const { nconf } = require("./lib/config");
+const { ForwardClient } = require("./lib/forward-client");
+const { Msg, Reader, serialize, deserialize } = require("./lib/proto");
 
 // for the pairwise operator
 require("rxjs/add/operator/pairwise");
@@ -19,17 +19,17 @@ if (nconf.get("log:console")) {
   transports.push(new winston.transports.Console({ colorize: colorize }));
 }
 
-const listenPort = nconf.get("listen:port"),
-  listenHost = nconf.get("listen:host"),
-  forward = nconf.get("forward"),
-  maxMessageLength = nconf.get("listen:maxMessageLength"),
-  vm_data = nconf.get("pagerduty:vm_data"),
-  hostname = vm_data["hostname"],
-  OK = serialize(new Msg(true)),
-  logger = new winston.Logger({
-    level: nconf.get("log:level"),
-    transports: transports,
-  });
+const listenPort = nconf.get("listen:port");
+const listenHost = nconf.get("listen:host");
+const forward = nconf.get("forward");
+const maxMessageLength = nconf.get("listen:maxMessageLength");
+const vm_data = nconf.get("pagerduty:vm_data");
+const hostname = vm_data["hostname"];
+const OK = serialize(new Msg(true));
+const logger = new winston.Logger({
+  level: nconf.get("log:level"),
+  transports: transports,
+});
 
 const forwarder = new ForwardClient(
   logger,
@@ -43,9 +43,9 @@ const forwarder = new ForwardClient(
 );
 
 if (nconf.get("pagerduty:serviceKey")) {
-  const pager = new PagerDuty(nconf.get("pagerduty:serviceKey")),
-    alertCheckIntervalSecs = nconf.get("pagerduty:alertCheckIntervalSecs"),
-    lostMessagesThreshold = nconf.get("pagerduty:lostMessagesThreshold");
+  const pager = new PagerDuty(nconf.get("pagerduty:serviceKey"));
+  const alertCheckIntervalSecs = nconf.get("pagerduty:alertCheckIntervalSecs");
+  const lostMessagesThreshold = nconf.get("pagerduty:lostMessagesThreshold");
   const messageLossTotalsStream = forwarder.messageLossCounter
     .bufferTime(alertCheckIntervalSecs * 1000)
     .map((events) => events.reduce((a, b) => a + b, 0));
