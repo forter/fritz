@@ -1,0 +1,25 @@
+env:
+    node: true
+    es6: true
+    mocha: true
+
+parserOptions:
+    ecmaVersion: 2019
+    noWatch: true
+
+plugins:
+    - 'eslint-plugin-prettier'
+    - 'eslint-plugin-simple-import-sort'
+
+extends:
+    - 'eslint:recommended'
+    - 'plugin:prettier/recommended'
+
+rules:
+    indent: 0
+    one-var: [error, never]
+    linebreak-style: [error, unix]
+    quotes: [error, double]
+    semi: [error, always]
+    simple-import-sort/imports: error
+    simple-import-sort/exports: error
