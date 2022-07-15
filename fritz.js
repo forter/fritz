@@ -127,15 +127,13 @@ const init = () => {
 
 for (const sig of ["SIGINT", "SIGTERM"]) {
   process.on(sig, () => {
-    logger.warn(`Got ${sig} signal, terminating`);
-    try {
-      server.close();
-      forwarder.client.close();
-    } catch (e) {
-      logger.error(e);
-    }
-
-    return process.exit;
+    logger.warn(`Got ${sig} signal, terminating..`);
+    logger.info("Closing server");
+    server.close(() => {
+      forwarder.close();
+      logger.info("Goodbye!");
+      process.exit(1);
+    });
   });
 }
 
