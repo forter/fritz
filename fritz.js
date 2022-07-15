@@ -3,7 +3,8 @@ const winston = require("winston");
 const PagerDuty = require("./lib/pagerduty");
 const { nconf } = require("./lib/config");
 const { ForwardClient } = require("./lib/forward-client");
-const { Msg, Reader, serialize, deserialize } = require("./lib/proto");
+const { Msg, Reader, serialize } = require("./lib/proto");
+const process = require("node:process");
 
 // for the pairwise operator
 require("rxjs/add/operator/pairwise");
@@ -66,7 +67,7 @@ if (nconf.get("pagerduty:serviceKey")) {
       );
 
       const service = "fritz message loss";
-      const incidentKey = hostname + " " + service;
+      const incidentKey = `${hostname} ${service}`;
       const eventType = lossState === "failed" ? "trigger" : "resolve";
       pager.call({
         incidentKey,
@@ -94,13 +95,13 @@ if (nconf.get("pagerduty:serviceKey")) {
 }
 
 for (const key of ["conf", "listen", "forward", "log", "pagerduty"]) {
-  logger.debug("config." + key + ":", nconf.get(key));
+  logger.debug(`config.${key}:`, nconf.get(key));
 }
 
 forwarder.connect();
 
 const server = net.createServer((socket) => {
-  const clientRepr = socket.remoteAddress + ":" + socket.remotePort;
+  const clientRepr = `${socket.remoteAddress}:${socket.remotePort}`;
   const reader = new Reader(maxMessageLength, logger);
   logger.info("client connected on", clientRepr);
   socket
@@ -126,9 +127,9 @@ const server = net.createServer((socket) => {
 });
 
 server.listen(listenPort, listenHost, () => {
-  logger.info("server listening on", listenHost + ":" + listenPort);
+  logger.info("server listening on", `${listenHost}:${listenPort}`);
 });
 
 for (const sig of ["SIGINT", "SIGTERM"]) {
-  process.on(sig, process.exit);
+  process.on(sig, () => process.exit);
 }
