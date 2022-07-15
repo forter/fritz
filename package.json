@@ -1,7 +1,7 @@
 {
   "name": "fritz",
   "description": "Riemann forward proxy",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "dependencies": {
     "nconf": "^0.12.0",
@@ -10,7 +10,6 @@
     "rxjs": "^7.5.6",
     "winston": "^3.8.1"
   },
-  "readmeFilename": "README.md",
   "main": "fritz.js",
   "devDependencies": {
     "eslint": "^8.19.0",
@@ -29,9 +28,7 @@
     "eslint": "eslint --fix fritz.js lib/ test/"
   },
   "engines": {
-    "node": ">=15"
+    "node": ">=18"
   },
-  "repository": "forter/fritz",
-  "author": "Forter",
-  "license": "Apache-2.0"
+  "repository": "forter/fritz"
 }
