@@ -7,18 +7,13 @@ const { Msg, Reader, serialize } = require("./lib/proto");
 const process = require("node:process");
 const { logger } = require("./lib/logger");
 
-const listenPort = nconf.get("listen:port");
-const listenHost = nconf.get("listen:host");
 const forward = nconf.get("forward");
 const maxMessageLength = nconf.get("listen:maxMessageLength");
-const vm_data = nconf.get("pagerduty:vm_data");
-const hostname = vm_data["hostname"];
 const OK = serialize(Msg.create({ ok: true }));
 
 logger.debug(`Starting forward client from ${forward.host}:${forward.port}`);
 
 const forwarder = new ForwardClient(
-  logger,
   forward.host,
   forward.port,
   forward.minFlushBufferSize,
@@ -32,6 +27,8 @@ const handlePagerdutyAlerts = () => {
   const pager = new PagerDuty(nconf.get("pagerduty:serviceKey"));
   const alertCheckIntervalSecs = nconf.get("pagerduty:alertCheckIntervalSecs");
   const lostMessagesThreshold = nconf.get("pagerduty:lostMessagesThreshold");
+  const vm_data = nconf.get("pagerduty:vm_data");
+  const hostname = vm_data["hostname"];
 
   const messageLossTotalsStream = forwarder.messageLossCounter.pipe(
     bufferTime(alertCheckIntervalSecs * 1000),
@@ -95,7 +92,7 @@ forwarder.connect();
 
 const server = net.createServer((socket) => {
   const clientRepr = `${socket.remoteAddress}:${socket.remotePort}`;
-  const reader = new Reader(maxMessageLength, logger);
+  const reader = new Reader(maxMessageLength);
   logger.info(`Client connected on ${clientRepr}`);
   socket
     .on("data", (data) => {
@@ -120,10 +117,16 @@ const server = net.createServer((socket) => {
     });
 });
 
-server.listen(listenPort, listenHost, () => {
-  logger.info("Server listening on", `${listenHost}:${listenPort}`);
-});
+const init = () => {
+  const listenHost = nconf.get("listen:host");
+  const listenPort = nconf.get("listen:port");
+  server.listen(listenPort, listenHost, () => {
+    logger.info("Server listening on", `${listenHost}:${listenPort}`);
+  });
+};
 
 for (const sig of ["SIGINT", "SIGTERM"]) {
   process.on(sig, () => process.exit);
 }
+
+init();
