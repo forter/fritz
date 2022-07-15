@@ -1,4 +1,4 @@
-const net = require("net");
+const net = require("node:net");
 const PagerDuty = require("./lib/pagerduty");
 const { map, bufferTime } = require("rxjs/operators");
 const { nconf } = require("./lib/config");
@@ -8,8 +8,6 @@ const process = require("node:process");
 const { logger } = require("./lib/logger");
 
 const forward = nconf.get("forward");
-const maxMessageLength = nconf.get("listen:maxMessageLength");
-const OK = serialize(Msg.create({ ok: true }));
 
 logger.debug(`Starting forward client from ${forward.host}:${forward.port}`);
 
@@ -90,6 +88,8 @@ for (const key of ["conf", "listen", "forward", "log", "pagerduty"]) {
 
 forwarder.connect();
 
+const maxMessageLength = nconf.get("listen:maxMessageLength");
+const OK = serialize(Msg.create({ ok: true }));
 const server = net.createServer((socket) => {
   const clientRepr = `${socket.remoteAddress}:${socket.remotePort}`;
   const reader = new Reader(maxMessageLength);
@@ -121,12 +121,22 @@ const init = () => {
   const listenHost = nconf.get("listen:host");
   const listenPort = nconf.get("listen:port");
   server.listen(listenPort, listenHost, () => {
-    logger.info("Server listening on", `${listenHost}:${listenPort}`);
+    logger.info(`Server listening on ${listenHost}:${listenPort}`);
   });
 };
 
 for (const sig of ["SIGINT", "SIGTERM"]) {
-  process.on(sig, () => process.exit);
+  process.on(sig, () => {
+    logger.warn(`Got ${sig} signal, terminating`);
+    try {
+      server.close();
+      forwarder.client.close();
+    } catch (e) {
+      logger.error(e);
+    }
+
+    return process.exit;
+  });
 }
 
 init();
