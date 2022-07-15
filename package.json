@@ -1,30 +1,37 @@
 {
   "name": "fritz",
   "description": "Riemann forward proxy",
-  "version": "0.0.1",
-  "private": false,
+  "version": "1.0.0",
+  "private": true,
   "dependencies": {
-    "nconf": "^0.8.2",
-    "protobufjs": "^5.0.1",
-    "request": "^2.71.0",
-    "rxjs": "^5.0.0-beta.2",
-    "winston": "^2.1.1"
+    "nconf": "^0.11.2",
+    "protobufjs": "^6.10.2",
+    "request": "^2.88.2",
+    "rxjs": "^6.6.3",
+    "winston": "^3.3.3"
   },
   "readmeFilename": "README.md",
   "main": "fritz.js",
   "devDependencies": {
-    "mocha": "^2.3.4",
-    "mocha-junit-reporter": "^1.11.1",
-    "should": "^8.1.1"
+    "eslint": "^7.19.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-simple-import-sort": "^7.0.0",
+    "mocha": "^8.2.1",
+    "mocha-junit-reporter": "^2.0.0",
+    "prettier": "^2.2.1",
+    "should": "^13.2.3"
   },
   "scripts": {
     "start": "node fritz.js",
-    "test": "node_modules/mocha/bin/mocha"
+    "test": "mocha",
+    "prettier": "prettier -w fritz.js lib/ test/",
+    "eslint": "eslint --fix fritz.js lib/ test/"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/forter/fritz"
+  "engines": {
+    "node": ">=15"
   },
+  "repository": "forter/fritz",
   "author": "Forter",
   "license": "Apache-2.0"
 }
