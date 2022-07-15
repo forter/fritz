@@ -1,21 +1,22 @@
 const net = require("net");
 const winston = require("winston");
 const PagerDuty = require("./lib/pagerduty");
+const { map, bufferTime } = require("rxjs/operators");
 const { nconf } = require("./lib/config");
 const { ForwardClient } = require("./lib/forward-client");
 const { Msg, Reader, serialize } = require("./lib/proto");
 const process = require("node:process");
-
-// for the pairwise operator
-require("rxjs/add/operator/pairwise");
 
 const transports = [];
 if (nconf.get("log:file")) {
   transports.push(new winston.transports.File({ filename: nconf.get("log:file") }));
 }
 if (nconf.get("log:console")) {
-  const colorize = nconf.get("log:console") === "color";
-  transports.push(new winston.transports.Console({ colorize: colorize }));
+  transports.push(
+    new winston.transports.Console({
+      format: winston.format.combine(winston.format.timestamp(), winston.format.colorize(), winston.format.cli()),
+    })
+  );
 }
 
 const listenPort = nconf.get("listen:port");
@@ -24,11 +25,13 @@ const forward = nconf.get("forward");
 const maxMessageLength = nconf.get("listen:maxMessageLength");
 const vm_data = nconf.get("pagerduty:vm_data");
 const hostname = vm_data["hostname"];
-const OK = serialize(new Msg(true));
-const logger = new winston.Logger({
+const OK = serialize(Msg.create({ ok: true }));
+const logger = new winston.createLogger({
   level: nconf.get("log:level"),
   transports: transports,
 });
+
+logger.debug(`Starting forward client from ${forward.host}:${forward.port}`);
 
 const forwarder = new ForwardClient(
   logger,
@@ -45,9 +48,11 @@ if (nconf.get("pagerduty:serviceKey")) {
   const pager = new PagerDuty(nconf.get("pagerduty:serviceKey"));
   const alertCheckIntervalSecs = nconf.get("pagerduty:alertCheckIntervalSecs");
   const lostMessagesThreshold = nconf.get("pagerduty:lostMessagesThreshold");
-  const messageLossTotalsStream = forwarder.messageLossCounter
-    .bufferTime(alertCheckIntervalSecs * 1000)
-    .map((events) => events.reduce((a, b) => a + b, 0));
+
+  const messageLossTotalsStream = forwarder.messageLossCounter.pipe(
+    bufferTime(alertCheckIntervalSecs * 1000),
+    map((events) => events.reduce((a, b) => a + b, 0))
+  );
 
   let lossState = "passed";
   messageLossTotalsStream.subscribe((totalMessagesLost) => {
@@ -95,7 +100,7 @@ if (nconf.get("pagerduty:serviceKey")) {
 }
 
 for (const key of ["conf", "listen", "forward", "log", "pagerduty"]) {
-  logger.debug(`config.${key}:`, nconf.get(key));
+  logger.debug(`config.${key}: ${JSON.stringify(nconf.get(key))}`);
 }
 
 forwarder.connect();
@@ -103,31 +108,32 @@ forwarder.connect();
 const server = net.createServer((socket) => {
   const clientRepr = `${socket.remoteAddress}:${socket.remotePort}`;
   const reader = new Reader(maxMessageLength, logger);
-  logger.info("client connected on", clientRepr);
+  logger.info(`Client connected on ${clientRepr}`);
   socket
     .on("data", (data) => {
       logger.silly("<<", data);
       try {
         const messages = reader.readMessagesFromBuffer(data);
+        // eslint-disable-next-line
         for (const _ in messages) {
           socket.write(OK);
         }
         forwarder.enqueue(messages);
       } catch (error) {
-        logger.error("Exception in socket", clientRepr, ":", error);
+        logger.error(`Exception in socket ${clientRepr}: ${error}`);
         socket.end();
       }
     })
     .on("end", () => {
-      logger.info("client disconnected on", clientRepr);
+      logger.info(`Client disconnected on ${clientRepr}`);
     })
     .on("error", (err) => {
-      logger.error("client error on", clientRepr, ":", err);
+      logger.error(`Client error on ${clientRepr}: ${err}`);
     });
 });
 
 server.listen(listenPort, listenHost, () => {
-  logger.info("server listening on", `${listenHost}:${listenPort}`);
+  logger.info("Server listening on", `${listenHost}:${listenPort}`);
 });
 
 for (const sig of ["SIGINT", "SIGTERM"]) {
