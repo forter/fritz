@@ -1,5 +1,3 @@
-"use strict";
-
 const net = require("net");
 const winston = require("winston");
 const PagerDuty = require("./lib/pagerduty");

@@ -1,5 +1,3 @@
-"use strict";
-
 require("should");
 const { Reader, Msg, Event, serialize, deserialize } = require("../lib/proto");
 
