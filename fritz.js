@@ -44,7 +44,7 @@ const forwarder = new ForwardClient(
   forward.flushTimeout
 );
 
-if (nconf.get("pagerduty:serviceKey")) {
+const handlePagerdutyAlerts = () => {
   const pager = new PagerDuty(nconf.get("pagerduty:serviceKey"));
   const alertCheckIntervalSecs = nconf.get("pagerduty:alertCheckIntervalSecs");
   const lostMessagesThreshold = nconf.get("pagerduty:lostMessagesThreshold");
@@ -97,6 +97,10 @@ if (nconf.get("pagerduty:serviceKey")) {
       });
     }
   });
+};
+
+if (nconf.get("pagerduty:serviceKey")) {
+  handlePagerdutyAlerts();
 }
 
 for (const key of ["conf", "listen", "forward", "log", "pagerduty"]) {
