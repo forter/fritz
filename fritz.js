@@ -4,7 +4,7 @@ import process from "node:process";
 import { nconf } from "./lib/config.js";
 import { ForwardClient } from "./lib/forward-client.js";
 import { getLogger } from "./lib/logger.js";
-import { handlePagerdutyAlerts } from "./lib/pagerduty-alerts.js";
+import { handleMessageLoss } from "./lib/message-loss.js";
 import { Msg, Reader, serialize } from "./lib/proto.js";
 
 const logger = getLogger("fritz");
@@ -21,9 +21,7 @@ const forwarder = new ForwardClient(
   forward.flushTimeout
 );
 
-if (nconf.get("pagerduty:serviceKey")) {
-  handlePagerdutyAlerts(forwarder);
-}
+handleMessageLoss(forwarder);
 
 for (const key of ["conf", "listen", "forward", "log", "pagerduty"]) {
   logger.debug(`config.${key}: ${JSON.stringify(nconf.get(key))}`);
@@ -38,13 +36,16 @@ const server = net.createServer((socket) => {
   logger.info(`Client connected on "${clientRepr}"`);
   socket
     .on("data", (data) => {
-      logger.silly("<<", data);
+      logger.debug(`Client sent data of length ${data.length}`);
       try {
         const messages = reader.readMessagesFromBuffer(data);
+        logger.debug(`Read ${messages.length} messages from client payload`);
         // eslint-disable-next-line
         for (const _ in messages) {
+          // auto-respond with ok message
           socket.write(OK);
         }
+        // pass messages to forwarder
         forwarder.enqueue(messages);
       } catch (error) {
         logger.error(`Exception in socket ${clientRepr}: ${error}`);

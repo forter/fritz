@@ -20,7 +20,8 @@
     "eslint-plugin-simple-import-sort": "^7.0.0",
     "mocha": "^10.0.0",
     "mocha-junit-reporter": "^2.0.2",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "riemann": "^2.1.1"
   },
   "scripts": {
     "start": "node fritz.js",
