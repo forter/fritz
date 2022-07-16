@@ -35,7 +35,7 @@ const OK = serialize(Msg.create({ ok: true }));
 const server = net.createServer((socket) => {
   const clientRepr = `${socket.remoteAddress}:${socket.remotePort}`;
   const reader = new Reader(maxMessageLength);
-  logger.info(`Client connected on ${clientRepr}`);
+  logger.info(`Client connected on "${clientRepr}"`);
   socket
     .on("data", (data) => {
       logger.silly("<<", data);
