@@ -1,6 +1,7 @@
-require("should");
-const { Reader, Msg, Event, serialize, deserialize } = require("../lib/proto");
-const { logger } = require("../lib/logger");
+import { expect } from "chai";
+
+import { logger } from "../lib/logger.js";
+import { deserialize, Event, Msg, Reader, serialize } from "../lib/proto.js";
 
 describe("Reader", () => {
   let r;
@@ -23,7 +24,7 @@ describe("Reader", () => {
         const input = Msg.create({ events: [Event.create({ service: "test service", host: "localhost" })] });
         const data = serialize(input);
         const [output] = r.readMessagesFromBuffer(data);
-        deserialize(output).should.eql(input);
+        expect(deserialize(output)).to.eql(input);
       });
 
       it("Returns a multiple messages", () => {
@@ -31,14 +32,14 @@ describe("Reader", () => {
         const input = [message, message];
         const data = Buffer.concat(input.map(serialize));
         const output = r.readMessagesFromBuffer(data);
-        output.map(deserialize).should.eql(input);
+        expect(output.map(deserialize)).to.eql(input);
       });
 
       it("Throws on long message", () => {
         const input = Msg.create({ events: [Event.create({ service: "test service abc 123", host: "localhost" })] });
         const data = serialize(input);
         const messages = r.readMessagesFromBuffer(data);
-        messages.should.be.empty();
+        expect(messages).to.be.empty;
       });
 
       it("Handles partial messages", () => {
@@ -46,9 +47,9 @@ describe("Reader", () => {
         const data = serialize(input);
         const chunks = [data.slice(0, data.length - 2), data.slice(data.length - 2, data.length)];
         const messages = r.readMessagesFromBuffer(chunks[0]);
-        messages.should.be.empty();
+        expect(messages).to.be.empty;
         const [output] = r.readMessagesFromBuffer(chunks[1]);
-        deserialize(output).should.eql(input);
+        expect(deserialize(output)).to.eql(input);
       });
 
       it("Handles partial message header", () => {
@@ -56,9 +57,9 @@ describe("Reader", () => {
         const data = serialize(input);
         const chunks = [data.slice(0, 2), data.slice(2, data.length)];
         const messages = r.readMessagesFromBuffer(chunks[0]);
-        messages.should.be.empty();
+        expect(messages).to.be.empty;
         const [output] = r.readMessagesFromBuffer(chunks[1]);
-        deserialize(output).should.eql(input);
+        expect(deserialize(output)).to.eql(input);
       });
     });
   });
