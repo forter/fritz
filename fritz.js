@@ -9,6 +9,7 @@ import { Msg, Reader, serialize } from "./lib/proto.js";
 
 const logger = getLogger("fritz");
 const forward = nconf.get("forward");
+const FORCE_TERMINATION_TIMEOUT = 5000;
 
 const forwarder = new ForwardClient(
   forward.host,
@@ -71,18 +72,20 @@ const init = () => {
 
 for (const sig of ["SIGINT", "SIGTERM"]) {
   process.on(sig, () => {
-    logger.warn(`Got ${sig} signal, terminating..`);
-    logger.info("Closing server");
-    server.close(() => {
-      forwarder.close();
-      logger.info("Goodbye!");
-      process.exit(0);
-    });
+    logger.info(`Got ${sig} signal, terminating..`);
 
     setTimeout(() => {
       logger.warn("Forcing termination since server did not terminate in time");
       process.exit(1);
-    }, 2000);
+    }, FORCE_TERMINATION_TIMEOUT);
+
+    forwarder.close();
+
+    logger.info("Closing server");
+    server.close(() => {
+      logger.info("Goodbye!");
+      process.exit(0);
+    });
   });
 }
 
