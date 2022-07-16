@@ -1,10 +1,11 @@
-const net = require("node:net");
-const { nconf } = require("./lib/config");
-const { ForwardClient } = require("./lib/forward-client");
-const { Msg, Reader, serialize } = require("./lib/proto");
-const process = require("node:process");
-const { getLogger } = require("./lib/logger");
-const { handlePagerdutyAlerts } = require("./lib/pagerduty-alerts");
+import net from "node:net";
+import process from "node:process";
+
+import { nconf } from "./lib/config.js";
+import { ForwardClient } from "./lib/forward-client.js";
+import { getLogger } from "./lib/logger.js";
+import { handlePagerdutyAlerts } from "./lib/pagerduty-alerts.js";
+import { Msg, Reader, serialize } from "./lib/proto.js";
 
 const logger = getLogger("fritz");
 const forward = nconf.get("forward");

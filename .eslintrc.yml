@@ -4,8 +4,9 @@ env:
     mocha: true
 
 parserOptions:
-    ecmaVersion: 2019
+    ecmaVersion: 2022
     noWatch: true
+    sourceType: module
 
 plugins:
     - 'eslint-plugin-prettier'
