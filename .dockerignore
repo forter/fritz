@@ -1,0 +1,7 @@
+.idea/
+node_modules/
+.tool-versions
+LICENSE
+README.md
+.eslintrc.yml
+.eslintignore

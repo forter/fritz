@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  fritz:
+    build:
+      context: .
+    command: ["node", "fritz.js", "--log:level=debug", "--forward:host=local-riemann", "--forward:port=7777"]
+    depends_on:
+      - local-riemann
+    ports:
+      - "5555:5555"
+  local-riemann:
+    image: riemannio/riemann:0.3.7
+    expose:
+      - 7777
+    volumes:
+      - ./misc/riemann.config:/etc/riemann.config:ro
