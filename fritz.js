@@ -3,9 +3,10 @@ const { nconf } = require("./lib/config");
 const { ForwardClient } = require("./lib/forward-client");
 const { Msg, Reader, serialize } = require("./lib/proto");
 const process = require("node:process");
-const { logger } = require("./lib/logger");
+const { getLogger } = require("./lib/logger");
 const { handlePagerdutyAlerts } = require("./lib/pagerduty-alerts");
 
+const logger = getLogger("fritz");
 const forward = nconf.get("forward");
 
 const forwarder = new ForwardClient(
@@ -74,8 +75,13 @@ for (const sig of ["SIGINT", "SIGTERM"]) {
     server.close(() => {
       forwarder.close();
       logger.info("Goodbye!");
-      process.exit(1);
+      process.exit(0);
     });
+
+    setTimeout(() => {
+      logger.warn("Forcing termination since server did not terminate in time");
+      process.exit(1);
+    }, 2000);
   });
 }
 
