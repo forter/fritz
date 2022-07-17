@@ -11,15 +11,7 @@ const logger = getLogger("fritz");
 const forward = nconf.get("forward");
 const FORCE_TERMINATION_TIMEOUT = 5000;
 
-const forwarder = new ForwardClient(
-  forward.host,
-  forward.port,
-  forward.minFlushBufferSize,
-  forward.maxBufferSize,
-  forward.maxFlushInterval,
-  forward.reconnectTimeout,
-  forward.flushTimeout
-);
+const forwarder = new ForwardClient(forward);
 
 handleMessageLoss(forwarder);
 
