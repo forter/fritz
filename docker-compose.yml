@@ -14,4 +14,4 @@ services:
     expose:
       - 7777
     volumes:
-      - ./misc/riemann.config:/etc/riemann.config:ro
+      - ./test/integration/riemann.config:/etc/riemann.config:ro
