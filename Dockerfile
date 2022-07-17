@@ -1,6 +1,6 @@
 FROM node:18.6.0
 
-WORKDIR /usr/src/app
+WORKDIR /app
 COPY package*.json ./
 
 RUN npm ci --omit=dev
