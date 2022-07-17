@@ -17,6 +17,6 @@ services:
   local-riemann:
     image: riemannio/riemann:0.3.7
     expose:
-      - 7777
+      - "7777"
     volumes:
       - ./test/integration/riemann.config:/etc/riemann.config:ro
