@@ -47,6 +47,19 @@ const run = async () => {
   );
   console.log(data);
 
+  // Array.from(Array(1000), async (_, i) => {
+  //   await client.send(
+  //     client.Event({
+  //       service: `prod-tx-storm-batch-instance-2015-03-23T1735 test-${i}`,
+  //       host: "192.168.10.3",
+  //       // time: Math.floor(Date.now() / 1000),
+  //       metric: Math.random() * 100,
+  //       tags: ["fatal-exception"],
+  //     }),
+  //     client.tcp
+  //   );
+  // });
+
   await client.disconnect();
 };
 
