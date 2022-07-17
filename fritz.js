@@ -23,10 +23,6 @@ const forwarder = new ForwardClient(
 
 handleMessageLoss(forwarder);
 
-for (const key of ["conf", "listen", "forward", "log", "pagerduty"]) {
-  logger.debug(`config.${key}: ${JSON.stringify(nconf.get(key))}`);
-}
-
 const maxMessageLength = nconf.get("listen:maxMessageLength");
 const OK = serialize(Msg.create({ ok: true }));
 
