@@ -15,7 +15,7 @@ services:
     ports:
       - "5555:5555"
   local-riemann:
-    image: riemannio/riemann:0.3.7
+    image: 174522763890.dkr.ecr.us-east-1.amazonaws.com/riemann:0.3.7
     expose:
       - "7777"
     volumes:
