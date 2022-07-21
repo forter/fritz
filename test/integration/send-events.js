@@ -63,4 +63,14 @@ const run = async () => {
   await client.disconnect();
 };
 
-await run();
+const init = async () => {
+  await run();
+};
+
+init()
+  .then((r) => {
+    console.log("Done");
+  })
+  .catch((e) => {
+    console.log("Exception", e);
+  });
