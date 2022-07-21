@@ -11,10 +11,10 @@
     "rxjs": "^7.5.6",
     "winston": "^3.8.1"
   },
-  "exports": "./fritz.js",
+  "exports": "./server.js",
   "devDependencies": {
     "chai": "^4.3.6",
-    "eslint": "^8.19.0",
+    "eslint": "^8.20.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-simple-import-sort": "^7.0.0",
@@ -24,13 +24,13 @@
     "riemann": "^2.1.1"
   },
   "scripts": {
-    "start": "node fritz.js",
+    "start": "node server.js",
     "test": "mocha",
-    "prettier": "prettier -w fritz.js lib/ test/",
-    "eslint": "eslint --fix fritz.js lib/ test/"
+    "prettier": "prettier -w server.js lib/ test/",
+    "eslint": "eslint --fix server.js lib/ test/"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=17"
   },
   "repository": "forter/fritz"
 }

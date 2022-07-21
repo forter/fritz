@@ -11,6 +11,10 @@ const logger = getLogger("fritz");
 const forward = nconf.get("forward");
 const FORCE_TERMINATION_TIMEOUT = 5000;
 
+for (const key of ["conf", "listen", "forward", "log", "pagerduty", "hostname"]) {
+    logger.debug(`config.${key}: ${JSON.stringify(nconf.get(key))}`);
+}
+
 const forwarder = new ForwardClient(forward);
 
 handleMessageLoss(forwarder);
