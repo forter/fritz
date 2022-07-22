@@ -68,7 +68,7 @@ const init = async () => {
 };
 
 init()
-  .then((r) => {
+  .then(() => {
     console.log("Done");
   })
   .catch((e) => {
