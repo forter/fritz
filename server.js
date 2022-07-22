@@ -29,11 +29,8 @@ const server = net.createServer((socket) => {
       try {
         const messages = reader.readMessagesFromBuffer(data);
         logger.debug(`Read ${messages.length} messages from client payload`);
-        // eslint-disable-next-line
-        for (const _ in messages) {
-          // auto-respond with ok message
-          socket.write(OK);
-        }
+        // auto-respond with ok message
+        messages.forEach(() => socket.write(OK));
         // pass messages to forwarder
         forwarder.enqueue(messages);
       } catch (error) {
@@ -53,11 +50,10 @@ const init = () => {
   handleMessageLoss(forwarder);
   handleTerminationSignals(server, forwarder);
 
-  const listenHost = nconf.get("listen:host");
-  const listenPort = nconf.get("listen:port");
-
   forwarder.connect();
 
+  const listenHost = nconf.get("listen:host");
+  const listenPort = nconf.get("listen:port");
   server.listen(listenPort, listenHost, () => {
     logger.info(`Server listening on ${listenHost}:${listenPort}`);
   });

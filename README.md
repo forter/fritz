@@ -7,7 +7,7 @@
 Directly running the server:
 
 ```shell
-$ npm start --log:level=debug --forward:host=localhost
+$ npm start -- --log:level=debug --forward:host=localhost
 ```
 
 Running locally using docker-compose and a local riemann
@@ -29,6 +29,12 @@ fritz-local-riemann-1  | #riemann.codec.Event{:host "Gilad-MBP-Forter", :service
 fritz-local-riemann-1  | #riemann.codec.Event{:host "Gilad-MBP-Forter", :service "foo", :state nil, :description nil, :metric 3.4, :tags ["nonblocking"], :time 1658495100, :ttl nil}
 fritz-fritz-1          | [forward-client] 2022-07-22T13:05:01.296Z debug:    Writing data to forward client length=99 numAcksExpected=1
 fritz-local-riemann-1  | #riemann.codec.Event{:host "192.168.10.3", :service "prod-tx-storm-batch-instance-2015-03-23T1735 test", :state nil, :description nil, :metric 3.4, :tags ["fatal-exception"], :time 1658495100, :ttl nil}
+```
+
+### Running unit tests
+
+```shell
+$ npm test -- --log:level=debug --forward:host=localhost
 ```
 
 ### Linting
