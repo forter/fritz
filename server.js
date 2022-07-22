@@ -1,23 +1,20 @@
 import net from "node:net";
-import process from "node:process";
 
 import { nconf } from "./lib/config.js";
 import { ForwardClient } from "./lib/forward-client.js";
 import { getLogger } from "./lib/logger.js";
 import { handleMessageLoss } from "./lib/message-loss.js";
 import { Msg, Reader, serialize } from "./lib/proto.js";
+import { handleTerminationSignals } from "./lib/termination-signals.js";
 
 const logger = getLogger("fritz");
 const forward = nconf.get("forward");
-const FORCE_TERMINATION_TIMEOUT = 5000;
 
 for (const key of ["conf", "listen", "forward", "log", "pagerduty", "hostname"]) {
-    logger.debug(`config.${key}: ${JSON.stringify(nconf.get(key))}`);
+  logger.debug(`config.${key}: ${JSON.stringify(nconf.get(key))}`);
 }
 
 const forwarder = new ForwardClient(forward);
-
-handleMessageLoss(forwarder);
 
 const maxMessageLength = nconf.get("listen:maxMessageLength");
 const OK = serialize(Msg.create({ ok: true }));
@@ -53,6 +50,9 @@ const server = net.createServer((socket) => {
 });
 
 const init = () => {
+  handleMessageLoss(forwarder);
+  handleTerminationSignals(server, forwarder);
+
   const listenHost = nconf.get("listen:host");
   const listenPort = nconf.get("listen:port");
 
@@ -62,24 +62,5 @@ const init = () => {
     logger.info(`Server listening on ${listenHost}:${listenPort}`);
   });
 };
-
-for (const sig of ["SIGINT", "SIGTERM"]) {
-  process.on(sig, () => {
-    logger.info(`Got ${sig} signal, terminating..`);
-
-    setTimeout(() => {
-      logger.warn("Forcing termination since server did not terminate in time");
-      process.exit(1);
-    }, FORCE_TERMINATION_TIMEOUT);
-
-    forwarder.close();
-
-    logger.info("Closing server");
-    server.close(() => {
-      logger.info("Goodbye!");
-      process.exit(0);
-    });
-  });
-}
 
 init();
