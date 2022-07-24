@@ -1,8 +1,20 @@
-## Riemann local forward agent
+# Events Forwarder
+
+Main goal is to buffer & forward events to Riemann.
+This application usually runs as a sidecar to main applications and has these main traits:
+
+1. Reconnecting client to remote Riemann
+2. Buffers events and immediately acks them on receives
+3. Easy configuration to custom-tailer to the various producers
+4. Meant for high-throughput event producing to Riemann
+5. Can report high failure rates to Pagerduty
+6. Batches events when writing to Riemann
+
+All code based on the original Fritz [code](https://github.com/forter/fritz)
 
 [Documentation](https://docs.google.com/document/d/1kMyjnLxM17YhrZ7WF-AlX1dK650M5MhlweG3iwTfgfg)
 
-### Running locally
+## Running locally
 
 Directly running the server:
 
