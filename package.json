@@ -1,5 +1,5 @@
 {
-  "name": "fritz",
+  "name": "events-forwarder",
   "description": "Riemann forward proxy",
   "version": "2.0.0",
   "private": true,
@@ -32,5 +32,5 @@
   "engines": {
     "node": ">=17"
   },
-  "repository": "forter/fritz"
+  "repository": "forter/events-forwarder"
 }

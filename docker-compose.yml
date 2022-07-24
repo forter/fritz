@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-  fritz:
+  events-forwarder:
     build:
       context: .
     command:

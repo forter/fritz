@@ -7,7 +7,7 @@ import { handleMessageLoss } from "./lib/message-loss.js";
 import { Msg, Reader, serialize } from "./lib/proto.js";
 import { handleTerminationSignals } from "./lib/termination-signals.js";
 
-const logger = getLogger("fritz");
+const logger = getLogger("server");
 const forward = nconf.get("forward");
 
 for (const key of ["conf", "listen", "forward", "log", "pagerduty", "hostname"]) {
