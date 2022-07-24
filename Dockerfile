@@ -4,7 +4,8 @@ USER app
 WORKDIR /app
 COPY package*.json ./
 
-RUN npm ci --omit=dev
+# TODO: run with --omit=dev for production image
+RUN npm ci
 
 COPY server.js ./
 COPY ./lib ./lib

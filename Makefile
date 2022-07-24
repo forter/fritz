@@ -14,6 +14,7 @@ build:
 
 .PHONY: ci-test
 ci-test:
+	docker run --rm -t $(DOCKER_IMAGE) npm test -- --log:level=debug --forward:host=localhost
 
 .PHONY: dist
 dist:
